@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Davinci macro reorder</title>
+    <title>Davinci macro editor</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.css" rel="stylesheet">
     <style>
         @import url('https://fonts.cdnfonts.com/css/cascadia-code');
@@ -144,6 +144,8 @@
             width: 50px;
             box-shadow: 0 0 20px black;
             top: 30vh;
+            transform: translateX(250%);
+            animation: none;
         }
 
         .control {
@@ -289,6 +291,10 @@
                     controls[i].style.backgroundPositionY = "0px";
                     controls[i].style.textShadow = "0 0 4px rgba(255, 255, 255, 0.432), 0 0 8px white, 0 0 16px rgba(255, 255, 255, 0.493)";
                     selectedControl = getElementIndexWithChildren(controls[i]);
+                    
+                    document.querySelectorAll('.arrowButtons').forEach(element => {
+                        element.animate({transform: `translateX(0)`}, {duration: 300, fill: "forwards", easing: `cubic-bezier(0,1,0,1)`})
+                    });
                 });
             }
         }
@@ -407,8 +413,8 @@
                     // byeString(codeBlock, 10);
                     codeBlock.animate({
                         letterSpacing: `-13px`,
-                    }, {duration: 100, ease: `cubic-bezier(.48,0,.99,-1.57)`})
-                    setTimeout(() => codeBlock.textContent="", 95)
+                    }, {duration: 100, easing: `cubic-bezier(1,0,1,0)`})
+                    setTimeout(() => codeBlock.textContent="", 99)
 
                     firstclick = false;
                 }
@@ -460,6 +466,15 @@
                 popup(true, "node does not contain user controls / invalid syntax");
                 return;
             }
+
+            document.querySelectorAll('.control').forEach(element => {
+                element.remove();
+            });
+            document.querySelectorAll('.arrowButtons').forEach(element => {
+                element.animate({transform: `translateX(250%)`}, {duration: 300, fill: "forwards", easing: `cubic-bezier(1,0,1,0)`})
+            });
+            
+
             var usrControlsStart = codeBlock.textContent.indexOf("UserControls = ordered() {")+28;
             var usrControlsEnd = codeBlock.textContent.indexOf("ActiveTool = ")-21;
             var codeUsrControls = codeBlock.textContent.slice(usrControlsStart, usrControlsEnd);
