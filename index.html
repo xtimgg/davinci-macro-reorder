@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editable Code Block</title>
+    <title>Davinci macro reorder</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.css" rel="stylesheet">
     <style>
         @import url('https://fonts.cdnfonts.com/css/cascadia-code');
@@ -261,6 +261,7 @@
 
     <button onclick="moveC(`up`)" id="upArrow" class="arrowButtons">&#x25B2;</button>
     <button onclick="moveC(`down`)" id="downArrow" class="arrowButtons" style="top: 50vh;">&#x25BC;</button>
+    <button onclick="popup(false, `coming soon (or not XD)`)" class="arrowButtons" style="top: 40vh; filter: brightness(.4);">edit</button>
 
     <div id="popUp"></div>
 
@@ -272,6 +273,11 @@
         const popMsg = document.getElementById('popUp');
         let selectedControl = -1;
 
+        function getElementIndexWithChildren(element) {
+            const children = Array.from(element.parentNode.children);
+            return children.indexOf(element);
+        }
+
         function addCListeners() {
             let controls = document.getElementsByClassName('control');
             for (let i = 0; i < controls.length; i++) {
@@ -282,7 +288,7 @@
                     }
                     controls[i].style.backgroundPositionY = "0px";
                     controls[i].style.textShadow = "0 0 4px rgba(255, 255, 255, 0.432), 0 0 8px white, 0 0 16px rgba(255, 255, 255, 0.493)";
-                    selectedControl = Number(controls[i].id.substring(1));
+                    selectedControl = getElementIndexWithChildren(controls[i]);
                 });
             }
         }
@@ -320,7 +326,6 @@
                 void movedC.offsetWidth;
                 movedC.style.animation = "";
                 movedC.style.animation = `shake .6s`;
-                setTimeout(() => movedC.style.animation = "", 600)
                 return;
             }
             if(direction=="down" && !movedC.nextElementSibling){
@@ -328,7 +333,6 @@
                 void movedC.offsetWidth;
                 movedC.style.animation = "";
                 movedC.style.animation = `shake .6s`;
-                setTimeout(() => movedC.style.animation = "", 600)
                 return;
             }
             
@@ -349,17 +353,36 @@
                     allControls[selectedControl-1] = _tempControl;
 
                     movedC.parentNode.insertBefore(movedC, movedC.previousElementSibling);
+                    movedC.style.animation=""
+                    movedC.animate({
+                        transform: `translateY(20px)`,
+                    }, {duration: 200, direction: 'reverse', easing: `cubic-bezier(.57,0,.62,-0.68)`})
+                    movedC.nextElementSibling.animate({
+                        transform: `translateY(-20px)`,
+                    }, {duration: 200, direction: 'reverse', easing: `cubic-bezier(.57,0,.62,-0.68)`})
                 } else {
                     _tempControl = allControls[selectedControl];
                     allControls[selectedControl] = allControls[selectedControl+1];
                     allControls[selectedControl+1] = _tempControl;
 
+                    movedC.style.animation=""
                     movedC.parentNode.insertBefore(movedC.nextElementSibling, movedC)
+                    movedC.animate({
+                        transform: `translateY(-20px)`,
+                    }, {duration: 200, direction: 'reverse', easing: `cubic-bezier(.57,0,.62,-0.68)`})
+                    movedC.previousElementSibling.animate({
+                        transform: `translateY(20px)`,
+                    }, {duration: 200, direction: 'reverse', easing: `cubic-bezier(.57,0,.62,-0.68)`})
                 }
                 
-                codeResult = codeBeforeUsrC + allControls.join("\n\t\t\t\t}") + codeAfterUsrC;
+                codeResult = codeBeforeUsrC + allControls.join("\n\t\t\t\t},") + codeAfterUsrC;
                 codeBlock.textContent = codeResult;
                 codeHighlight();
+                selectedControl = getElementIndexWithChildren(movedC);
+                for (let i = 0; i < controls.length; i++) {
+                    controls[i].id = `c${getElementIndexWithChildren(controls[i])}`
+                }
+
         //         movedC.style.animation = "none";
         //         movedC.previousElementSibling.style.animation = "none";
         //         return;
@@ -376,6 +399,7 @@
 
         let firstclick = true;
         window.onload = () => {
+            codeHighlight();
             const codeBlock = document.querySelector('.editable-code');
             codeBlock.blur();
             codeBlock.addEventListener('focus', () => {
@@ -384,7 +408,7 @@
                     codeBlock.animate({
                         letterSpacing: `-13px`,
                     }, {duration: 100, ease: `cubic-bezier(.48,0,.99,-1.57)`})
-                    setTimeout(() => codeBlock.textContent="", 100)
+                    setTimeout(() => codeBlock.textContent="", 95)
 
                     firstclick = false;
                 }
@@ -392,7 +416,6 @@
         };
 
         codeBlock.addEventListener('input', () => codeHighlight());
-        codeBlock.addEventListener(codeHighlight());
 
         function copyCodeB() {
             navigator.clipboard.writeText(codeBlock.textContent);
@@ -437,8 +460,8 @@
                 popup(true, "node does not contain user controls / invalid syntax");
                 return;
             }
-            var usrControlsStart = codeBlock.textContent.indexOf("UserControls = ordered() {")+27;
-            var usrControlsEnd = codeBlock.textContent.indexOf("ActiveTool = ")-15;
+            var usrControlsStart = codeBlock.textContent.indexOf("UserControls = ordered() {")+28;
+            var usrControlsEnd = codeBlock.textContent.indexOf("ActiveTool = ")-21;
             var codeUsrControls = codeBlock.textContent.slice(usrControlsStart, usrControlsEnd);
             codeBeforeUsrC = codeBlock.textContent.slice(0, usrControlsStart);
             codeAfterUsrC = codeBlock.textContent.slice(usrControlsEnd, codeBlock.textContent.length);
