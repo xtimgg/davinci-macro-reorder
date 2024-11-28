@@ -53,7 +53,8 @@
             overflow-y: auto;
             outline: none;
             height: 80vh;
-            width: 60%;
+            width: 55%;
+            margin-left: 1%;
             transition: .3s cubic-bezier(0, .5, 0, 1);
             box-shadow: 0 0 20px black;
             transform-origin: 100% 0%;
@@ -63,7 +64,8 @@
         .editable-code:focus {
             background-color: #101010;
             border-radius: 15px 25px 15px 15px;
-            transform: scale(1.01);
+            width: 57%;
+            margin-left: 0;
             box-shadow: 0 0 10px black;
         }
 
@@ -185,6 +187,29 @@
             font-size: 30px;
             text-align: center;
             display: none;
+            padding: 5px 20px 20px 20px;
+        }
+
+        @keyframes up {
+            0% {transform: translateY(0px);}
+            100% {transform: translateY(-40px);}
+        }
+
+        @keyframes down {
+            0% {transform: translateY(0px);}
+            100% {transform: translateY(40px);}
+        }
+
+        @keyframes shake {
+            0% {transform: translateX(-2vw); filter: hue-rotate(170deg);}
+            12% {transform: translateX(2vw);}
+            24% {transform: translateX(-1.5vw); filter: hue-rotate(150deg)}
+            36% {transform: translateX(1vw);}
+            48% {transform: translateX(-.7vw);}
+            60% {transform: translateX(.3vw);}
+            72% {transform: translateX(-.1vw); filter: hue-rotate(20deg)}
+            84% {transform: translateX(.1vw);}
+            100% {transform: translateX(0vw); filter: hue-rotate(0)}
         }
     </style>
 </head>
@@ -230,21 +255,12 @@
 
         <button onclick="analyzeCode()">analyze code</button>
 
-        <ul>
-            <li class="control">randomowy coś</li>
-            <li class="control">randomowy coś</li>
-            <li class="control">randomowy coś</li>
-            <li class="control">randomowy coś</li>
-            <li class="control">randomowy coś</li>
-            <li class="control">randomowy coś</li>
-            <li class="control">randomowy coś</li>
-            <li class="control">randomowy coś</li>
-            <li class="control">randomowy coś</li>
+        <ul id="list">
         </ul>
     </div>
 
-    <button id="upArrow" class="arrowButtons">&#x25B2;</button>
-    <button id="downArrow" class="arrowButtons" style="top: 50vh;">&#x25BC;</button>
+    <button onclick="moveC(`up`)" id="upArrow" class="arrowButtons">&#x25B2;</button>
+    <button onclick="moveC(`down`)" id="downArrow" class="arrowButtons" style="top: 50vh;">&#x25BC;</button>
 
     <div id="popUp"></div>
 
@@ -254,20 +270,100 @@
         const controls = document.getElementsByClassName('control');
         const copyCodeButton = document.getElementById('copyCode');
         const popMsg = document.getElementById('popUp');
+        let selectedControl = -1;
 
-        for (let i = 0; i < controls.length; i++) {
-            controls[i].addEventListener('click', () => {
-                for (let j = 0; j < controls.length; j++) {
-                      controls[j].style.backgroundPositionY = "10px";
-                      controls[j].style.textShadow = "none";
-                      //controls[j].style.background="transparent";
-                      //controls[j].style.boxShadow="0px 5px 0px black";
+        function addCListeners() {
+            let controls = document.getElementsByClassName('control');
+            for (let i = 0; i < controls.length; i++) {
+                controls[i].addEventListener('click', () => {
+                    for (let j = 0; j < controls.length; j++) {
+                        controls[j].style.backgroundPositionY = "10px";
+                        controls[j].style.textShadow = "none";
+                    }
+                    controls[i].style.backgroundPositionY = "0px";
+                    controls[i].style.textShadow = "0 0 4px rgba(255, 255, 255, 0.432), 0 0 8px white, 0 0 16px rgba(255, 255, 255, 0.493)";
+                    selectedControl = Number(controls[i].id.substring(1));
+                });
+            }
+        }
+
+
+        let cAnimating = false;
+
+
+        function moveC(direction) {
+
+            // function moveCAnim(element, direction) {
+            //     if(cAnimating==true){
+            //         var old_element = element;
+            //         var new_element = old_element.cloneNode(true);
+            //         old_element.parentNode.replaceChild(new_element, old_element);
+            //         element = new_element;
+            //         cAnimating = false;
+            //         if(direction=="up") {
+            //             element.parentNode.insertBefore(element, element.previousElementSibling);
+            //         } else {
+            //             element.parentNode.insertBefore(element.nextElementSibling, element)
+            //         }
+            //         element.style.animation = "none";
+            //         element.previousElementSibling.style.animation = "none";
+            //     }
+            //     element.style.animation = "none";
+            //     void element.offsetWidth;
+            //     element.style.animation = "";
+            //     element.style.animation = `${direction} .3s cubic-bezier(.19,2.2,.53,1)`;
+            // }
+
+            movedC = document.getElementById(`c${selectedControl}`)     
+            if(direction=="up" && !movedC.previousElementSibling) {
+                movedC.style.animation = "none";
+                void movedC.offsetWidth;
+                movedC.style.animation = "";
+                movedC.style.animation = `shake .6s`;
+                setTimeout(() => movedC.style.animation = "", 600)
+                return;
+            }
+            if(direction=="down" && !movedC.nextElementSibling){
+                movedC.style.animation = "none";
+                void movedC.offsetWidth;
+                movedC.style.animation = "";
+                movedC.style.animation = `shake .6s`;
+                setTimeout(() => movedC.style.animation = "", 600)
+                return;
+            }
+            
+            // if(direction=="up") {
+            //     moveCAnim(movedC, "up");
+            //     moveCAnim(movedC.previousElementSibling, "down");
+            // } else {
+            //     moveCAnim(movedC, "down");
+            //     moveCAnim(movedC.nextElementSibling, "up");
+            // }
+            // cAnimating = true;
+
+            // movedC.addEventListener('animationend', () => {
+            //     cAnimating = false;
+                if(direction=="up") {
+                    _tempControl = allControls[selectedControl];
+                    allControls[selectedControl] = allControls[selectedControl-1];
+                    allControls[selectedControl-1] = _tempControl;
+
+                    movedC.parentNode.insertBefore(movedC, movedC.previousElementSibling);
+                } else {
+                    _tempControl = allControls[selectedControl];
+                    allControls[selectedControl] = allControls[selectedControl+1];
+                    allControls[selectedControl+1] = _tempControl;
+
+                    movedC.parentNode.insertBefore(movedC.nextElementSibling, movedC)
                 }
-                controls[i].style.backgroundPositionY = "0px";
-                controls[i].style.textShadow = "0 0 4px rgba(255, 255, 255, 0.432), 0 0 8px white, 0 0 16px rgba(255, 255, 255, 0.493)";
-                //controls[i].style.background="linear-gradient(to top, #0050ff 10%, transparent 50%)"
-                //controls[i].style.boxShadow="0 0 5px black"
-            });
+                
+                codeResult = codeBeforeUsrC + allControls.join("\n\t\t\t\t}") + codeAfterUsrC;
+                codeBlock.textContent = codeResult;
+                codeHighlight();
+        //         movedC.style.animation = "none";
+        //         movedC.previousElementSibling.style.animation = "none";
+        //         return;
+        //     }, { once: true } )
         }
 
         codeBlock.addEventListener('keypress', function(event) {
@@ -278,19 +374,24 @@
             } 
         });
 
+        let firstclick = true;
         window.onload = () => {
             const codeBlock = document.querySelector('.editable-code');
             codeBlock.blur();
+            codeBlock.addEventListener('focus', () => {
+                if (firstclick == true) {
+                    // byeString(codeBlock, 10);
+                    codeBlock.animate({
+                        letterSpacing: `-13px`,
+                    }, {duration: 100, ease: `cubic-bezier(.48,0,.99,-1.57)`})
+                    setTimeout(() => codeBlock.textContent="", 100)
+
+                    firstclick = false;
+                }
+            })
         };
 
         codeBlock.addEventListener('input', () => codeHighlight());
-        let firstclick = true;
-        codeBlock.addEventListener('click', () => {
-            if (firstclick == true) {
-                byeString(codeBlock, 10);
-                firstclick = false;
-            }
-        });
         codeBlock.addEventListener(codeHighlight());
 
         function copyCodeB() {
@@ -326,6 +427,11 @@
             setTimeout(() => byeString(str, speed), 5)
         }
 
+        var codeBeforeUsrC = "";
+        var codeAfterUsrC = "";
+        var codeResult = "";
+        var allControls = [];
+
         function analyzeCode() {
             if(codeBlock.textContent.indexOf("UserControls = ordered() {") == -1) {
                 popup(true, "node does not contain user controls / invalid syntax");
@@ -334,18 +440,34 @@
             var usrControlsStart = codeBlock.textContent.indexOf("UserControls = ordered() {")+27;
             var usrControlsEnd = codeBlock.textContent.indexOf("ActiveTool = ")-15;
             var codeUsrControls = codeBlock.textContent.slice(usrControlsStart, usrControlsEnd);
-            var codeBeforeUsrC = codeBlock.textContent.slice(0, usrControlsStart);
-            var codeAfterUsrC = codeBlock.textContent.slice(usrControlsEnd, codeBlock.textContent.length);
+            codeBeforeUsrC = codeBlock.textContent.slice(0, usrControlsStart);
+            codeAfterUsrC = codeBlock.textContent.slice(usrControlsEnd, codeBlock.textContent.length);
             // var codeUsrControlsUT = untab(codeUsrControls);
             // codeUsrControlsUT = untab(codeUsrControls);
             // codeUsrControlsUT = untab(codeUsrControls);
 
-            let regex = new RegExp("\n				}", "gi");
-            let controlNum = codeUsrControls.match(regex).length;
-            popup(false, `found ${controlNum} controls`)
+            allControls = codeUsrControls
+                .split("\n\t\t\t\t},") // Split using the delimiter
+                .filter(part => part.trim() !== ""); // Remove empty or whitespace-only strings
 
-            codeResult = codeBeforeUsrC + codeUsrControls + codeAfterUsrC;
-            codeBlock.textContent = codeUsrControls;
+            let controlNum = allControls.length;
+            popup(false, `found ${controlNum} controls`);
+
+            // Create a new element
+            const controlLI = document.createElement('li');
+            controlLI.textContent = allControls[0].slice(0, allControls[0].indexOf(" "));
+            controlLI.className = 'control';
+            controlLI.id = 'c0';
+            document.getElementById('list').appendChild(controlLI);
+
+            for(i=1; i<controlNum; i++) {
+                const cClone = controlLI.cloneNode(true);
+                cClone.textContent = allControls[i].slice(0, allControls[i].indexOf(" "));
+                cClone.id = `c${i}`;
+                document.getElementById('list').appendChild(cClone);
+            }
+
+            addCListeners();
         }
 
         function untab(str) {
@@ -359,10 +481,10 @@
 
             if(error) {
                 popMsg.style.backgroundColor = "#ff000050";
-                popMsg.innerHTML = `<div style="font-size: 70px;">&#9888;</div> ` + msg
+                popMsg.innerHTML = `<div style="font-size: 70px;">&#9888;</div> ` + msg + "\n"
             } else {
                 popMsg.style.backgroundColor = "#00ff0050";
-                popMsg.innerHTML = `<div style="font-size: 50px;">&#9432;</div> ` + msg
+                popMsg.innerHTML = `<div style="font-size: 50px;">&#9432;</div> ` + msg + "\n"
             }
             
             popMsg.animate({
